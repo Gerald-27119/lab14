@@ -1,0 +1,42 @@
+name: 'Custom Deploy'
+description: 'Symulowane wdrożenie aplikacji (tylko echo w logach)'
+inputs:
+  environment:
+    description: 'Środowisko, do którego rzekomo wdrażamy (staging lub production)'
+    required: true
+    default: 'staging'
+  version:
+    description: 'SHA komitu lub tag wersji do „wdrożenia”'
+    required: true
+  notify-team:
+    description: 'Czy symulować wysłanie powiadomienia do zespołu (true/false)'
+    required: false
+    default: 'false'
+outputs:
+  deployment_url:
+    description: 'URL symulowanego wdrożenia (wyświetlony tylko w logach)'
+    value: ${{ steps.deploy.outputs.deployment_url }}
+  deployment_time:
+    description: 'Czas symulowanego wdrożenia w ISO8601'
+    value: ${{ steps.deploy.outputs.deployment_time }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Symulacja wdrożenia do ${{ inputs.environment }}
+      id: deploy
+      shell: bash
+      run: |
+        echo ">>> [Symulacja] Rozpoczynam wdrożenie wersji ${{ inputs.version }} do środowiska ${{ inputs.environment }}"
+        DEPLOY_URL="https://${{ inputs.environment }}.example.com (symulacja)"
+        echo "deployment_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+        TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        echo "deployment_time=$TIMESTAMP" >> $GITHUB_OUTPUT
+        echo ">>> [Symulacja] Aplikacja »wdrożona« (tylko komunikat)."
+        echo "deployment_time=$TIMESTAMP" >> $GITHUB_OUTPUT
+        echo ">>> [Symulacja] Aplikacja »wdrożona« (tylko komunikat)."
+
+    - name: Symulacja powiadomienia (jeśli notify-team == true)
+      if: ${{ inputs.notify-team == 'true' }}
+      shell: bash
+      run: |
+        echo ">>> [Symulacja] Powiadamiam zespół o zakończonym wdrożeniu (tylko komunikat)."
