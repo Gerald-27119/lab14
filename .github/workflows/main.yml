@@ -127,7 +127,7 @@ jobs:
 
       - name: Upload unit coverage report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.1
         with:
           name: unit-coverage-${{ matrix.node-version }}
           path: coverage/unit
@@ -175,7 +175,7 @@ jobs:
 
       - name: Upload Docker-based unit coverage
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.1
         with:
           name: container-unit-coverage
           path: coverage/unit
@@ -207,7 +207,7 @@ jobs:
 
       - name: Upload integration coverage
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.1
         with:
           name: integration-coverage
           path: coverage/integration
@@ -237,7 +237,7 @@ jobs:
         run: docker save ci-cd-node-mongo-redis:${{ github.sha }} -o image.tar
 
       - name: Upload Docker image as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.1
         with:
           name: docker-image-${{ github.sha }}
           path: image.tar
