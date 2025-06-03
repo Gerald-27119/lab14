@@ -248,7 +248,7 @@ jobs:
 
   deploy:
     name: Deploy (symulowany)
-    runs-on: ubuntu-latest   # zmienione na ubuntu-latest, bo i tak nic nie wykonujemy
+    runs-on: ubuntu-latest # zmienione na ubuntu-latest, bo i tak nic nie wykonujemy
     needs:
       - build
     if: ${{ github.ref == 'refs/heads/main' && always() }}

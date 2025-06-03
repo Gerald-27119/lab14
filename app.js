@@ -17,7 +17,8 @@ const MessageSchema = new mongoose.Schema({ text: String });
 const Message = mongoose.model('Message', MessageSchema);
 
 // Połączenie do MongoDB i utworzenie domyślnej wiadomości, jeśli kolekcja jest pusta:
-mongoose.connect(mongoUri)
+mongoose
+  .connect(mongoUri)
   .then(async () => {
     console.log('Connected to MongoDB');
     const count = await Message.countDocuments();
@@ -26,7 +27,7 @@ mongoose.connect(mongoUri)
       console.log('Default message created in MongoDB');
     }
   })
-  .catch(err => {
+  .catch((err) => {
     console.error('MongoDB connection error:', err);
   });
 
