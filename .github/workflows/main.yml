@@ -118,7 +118,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-${{ matrix.node-version }}-
 
-      - name: Install dependencies     # <-- nadajemy ID i allow failure
+      - name: Install dependencies # <-- nadajemy ID i allow failure
         id: npm_install
         continue-on-error: true
         run: npm ci
@@ -131,7 +131,7 @@ jobs:
           echo "---- Pełny dump plików .log: ----"
           cat ~/.npm/_logs/*.log || true
 
-      - name: Run Node.js Unit Tests   # <-- uruchamiamy testy tylko, gdy npm_install jest sukcesem
+      - name: Run Node.js Unit Tests # <-- uruchamiamy testy tylko, gdy npm_install jest sukcesem
         if: steps.npm_install.outcome == 'success'
         run: npm run test:unit
 
