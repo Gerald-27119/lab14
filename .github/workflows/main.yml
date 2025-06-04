@@ -91,6 +91,7 @@ jobs:
   ################################################################
   # 2. Testy jednostkowe w matrixie (różne wersje Node.js + cache)
   ################################################################
+
   unit_tests:
     name: Unit Tests (Node.js matrix)
     runs-on: ubuntu-latest
@@ -118,21 +119,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-${{ matrix.node-version }}-
 
-      - name: Install dependencies # <-- nadajemy ID i allow failure
-        id: npm_install
-        continue-on-error: true
+      - name: Install dependencies
         run: npm ci
 
-      - name: Dump npm-debug log (jeśli był błąd)
-        if: steps.npm_install.outcome == 'failure'
-        run: |
-          echo "---- Zawartość katalogu ~/.npm/_logs/ ----"
-          ls ~/.npm/_logs/ || true
-          echo "---- Pełny dump plików .log: ----"
-          cat ~/.npm/_logs/*.log || true
-
-      - name: Run Node.js Unit Tests # <-- uruchamiamy testy tylko, gdy npm_install jest sukcesem
-        if: steps.npm_install.outcome == 'success'
+      - name: Run Node.js Unit Tests
         run: npm run test:unit
 
       - name: Upload unit coverage report
@@ -143,7 +133,6 @@ jobs:
           path: coverage/unit
 
       - name: Publish coverage to Codecov
-        if: steps.npm_install.outcome == 'success'
         uses: codecov/codecov-action@v3
         with:
           files: coverage/unit/**/*.lcov
@@ -259,7 +248,7 @@ jobs:
 
   deploy:
     name: Deploy (symulowany)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # zmienione na ubuntu-latest, bo i tak nic nie wykonujemy
     needs:
       - build
     if: ${{ github.ref == 'refs/heads/main' && always() }}
