@@ -220,7 +220,22 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # Budujemy i uruchamiamy wszystkie serwisy z docker-compose za pomocą "docker compose"
+      - name: Setup Node.js 18 # <— Dodajemy Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Cache npm # <— Caching npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-18-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-18-
+
+      - name: Install dependencies # <— tu faktycznie instalujemy pakiety, w tym jest też "jest"
+        run: npm ci
+
       - name: Setup Docker Compose
         run: docker compose up -d --build
 
