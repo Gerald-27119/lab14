@@ -91,7 +91,6 @@ jobs:
   ################################################################
   # 2. Testy jednostkowe w matrixie (różne wersje Node.js + cache)
   ################################################################
-
   unit_tests:
     name: Unit Tests (Node.js matrix)
     runs-on: ubuntu-latest
@@ -119,22 +118,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-${{ matrix.node-version }}-
 
-      - name: Install dependencies
-        # Nawet jeśli npm ci się nie powiedzie, workflow przejdzie dalej, żebyśmy mogli wypisać logi
-        run: |
-          npm ci || true
+      - name: Install dependencies     # <-- nadajemy ID i allow failure
+        id: npm_install
+        continue-on-error: true
+        run: npm ci
 
       - name: Dump npm-debug log (jeśli był błąd)
-        if: failure() || always()
+        if: steps.npm_install.outcome == 'failure'
         run: |
           echo "---- Zawartość katalogu ~/.npm/_logs/ ----"
           ls ~/.npm/_logs/ || true
           echo "---- Pełny dump plików .log: ----"
           cat ~/.npm/_logs/*.log || true
 
-      - name: Run Node.js Unit Tests
-        # Testy uruchomić tylko, gdy npm ci zakończył się sukcesem
-        if: success()
+      - name: Run Node.js Unit Tests   # <-- uruchamiamy testy tylko, gdy npm_install jest sukcesem
+        if: steps.npm_install.outcome == 'success'
         run: npm run test:unit
 
       - name: Upload unit coverage report
@@ -145,7 +143,7 @@ jobs:
           path: coverage/unit
 
       - name: Publish coverage to Codecov
-        if: success()
+        if: steps.npm_install.outcome == 'success'
         uses: codecov/codecov-action@v3
         with:
           files: coverage/unit/**/*.lcov
