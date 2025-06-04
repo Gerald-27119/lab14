@@ -11,7 +11,5 @@ describe('Unit Test: GET /', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('message', 'Test message');
     expect(typeof res.body.visits).toBe('number');
-  }, // opcjonalnie: można zwiększyć timeout, ale poniżej
-  // test i tak działa szybko, bo nie ma rzeczywistego połączenia
-  10000);
+  }, 10000); // test i tak działa szybko, bo nie ma rzeczywistego połączenia // opcjonalnie: można zwiększyć timeout, ale poniżej
 });

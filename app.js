@@ -44,7 +44,7 @@ if (!isTest) {
   // redisClient.incr zawsze zwróci 1,
   // Message.findOne zawsze zwróci { text: 'Test message' }.
   redisClient = {
-    incr: async (key) => {
+    incr: async () => {
       return 1;
     },
   };
