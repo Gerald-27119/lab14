@@ -36,8 +36,6 @@ services:
       redis:
         condition: service_healthy
     environment:
-      # Połączenie do MongoDB (używamy nazwy serwisu jako hosta)
       MONGO_URI: mongodb://mongo:27017/testdb
-      # Połączenie do Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
