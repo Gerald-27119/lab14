@@ -318,6 +318,8 @@ jobs:
           file: Dockerfile
           # Przykładowy tag: username/repo:commitSHA lub username/repo:latest
           push: true
+          load: true
+          
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/lab14:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/lab14:latest
