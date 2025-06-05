@@ -161,6 +161,8 @@ jobs:
       - name: Publish coverage to Codecov
         if: success()
         uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: coverage/unit/**/*.lcov
           flags: unit-${{ matrix.node-version }}
@@ -207,6 +209,15 @@ jobs:
           name: container-unit-coverage
           path: coverage/unit
 
+      - name: Publish container-based coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: coverage/unit/**/*.lcov
+          flags: container-unit
+
   ####################################################
   # 4. Testy integracyjne z docker-compose (Mongo+Redis)
   ####################################################
@@ -250,12 +261,27 @@ jobs:
       - name: Run Integration Tests
         run: npm run test:integration
 
+      - name: Check coverage directory
+        run: |
+          echo "### Zawartość folderu coverage/integration ###"
+          ls -R coverage/integration || echo "Brak katalogu coverage/integration"
+
       - name: Upload integration coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: integration-coverage
           path: coverage/integration
+          if-no-files-found: ignore
+
+      - name: Publish integration coverage to Codecov
+        if: success()
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: coverage/integration/**/*.lcov
+          flags: integration
 
   ###########################################
   # 5. Budowanie obrazu produkcyjnego Docker #
