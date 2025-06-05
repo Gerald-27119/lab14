@@ -1,11 +1,9 @@
-// app.js
 const express = require('express');
 const mongoose = require('mongoose');
 const Redis = require('ioredis');
 
 const app = express();
 
-// Pobranie konfiguracji z ENV:
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/testdb';
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = process.env.REDIS_PORT || 6379;
@@ -18,10 +16,8 @@ let Message;
 
 // W trybie innym niż "test" – podłączamy się do Mongo i Redis:
 if (!isTest) {
-  // Inicjalizacja Redis:
   redisClient = new Redis({ host: redisHost, port: redisPort });
 
-  // Definicja schematu w MongoDB:
   const MessageSchema = new mongoose.Schema({ text: String });
   Message = mongoose.model('Message', MessageSchema);
 
@@ -55,7 +51,6 @@ if (!isTest) {
   };
 }
 
-// Endpoint GET / zwracający tekst z Mongo i licznik z Redis:
 app.get('/', async (req, res) => {
   try {
     // W trybie testowym Message.findOne() i redisClient.incr()
