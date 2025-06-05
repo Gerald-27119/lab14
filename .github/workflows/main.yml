@@ -20,7 +20,8 @@ on:
         options:
           - staging
           - production
-
+# //test
+# test
 jobs:
   ################################################
   # 1. Faza wstępna (równoległe: lint, audit, format)

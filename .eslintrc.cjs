@@ -1,9 +1,9 @@
 module.exports = {
   env: {
     browser: true,
-    node: true, // Added node environment
+    node: true,
     es2021: true,
-    jest: true, // Added jest globals for tests
+    jest: true,
   },
   extends: 'eslint:recommended',
   parserOptions: {
