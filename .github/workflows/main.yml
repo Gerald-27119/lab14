@@ -172,9 +172,7 @@ jobs:
     name: Tests in Docker Container (Unit only)
     runs-on: ubuntu-latest
     needs:
-      - lint
-      - audit
-      - format
+      - unit_tests
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -215,7 +213,7 @@ jobs:
     name: Integration Tests (docker-compose Mongo+Redis)
     runs-on: ubuntu-latest
     needs:
-      - unit_tests
+      - container_tests
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
