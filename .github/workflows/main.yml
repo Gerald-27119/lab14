@@ -133,13 +133,14 @@ jobs:
           ls ~/.npm/_logs/ || true
           echo "---- Zawartość wszystkich .log w ~/.npm/_logs ----"
           cat ~/.npm/_logs/*.log || true
-        # Opcjonalnie: wrzucamy pliki do artefaktów, żeby można było je pobrać
+
       - name: Publish npm logs as artifact
         if: steps.npm_install.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: npm-debug-logs-${{ matrix.node-version }}
           path: ~/.npm/_logs/*.log
+
       - name: Fail the job if npm ci failed
         if: steps.npm_install.outcome == 'failure'
         run: exit 1
@@ -198,7 +199,6 @@ jobs:
             -w /usr/src/app \
             ci-cd-node-mongo-redis-ci:${{ github.sha }} \
             bash -c "npm ci && npm run test:unit"
-        # Jeżeli npm ci lub testy w kontenerze się nie powiedzą, job zakończy się od razu błędem.
 
       - name: Upload Docker-based unit coverage
         if: always()
@@ -222,12 +222,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Node.js 18 # <— Dodajemy Node.js
+      - name: Setup Node.js 18
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Cache npm # <— Caching npm
+      - name: Cache npm
         uses: actions/cache@v3
         with:
           path: ~/.npm
@@ -235,7 +235,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-18-
 
-      - name: Install dependencies # <— tu faktycznie instalujemy pakiety, w tym jest też "jest"
+      - name: Install dependencies
         run: npm ci
 
       - name: Setup Docker Compose
@@ -325,3 +325,15 @@ jobs:
       - name: Notify on Deployment Failure (tylko symulacja komentarza)
         if: failure()
         run: echo ">>> [Symulacja deploy] Wystąpił błąd w symulowanym wdrożeniu – (tylko echo, brak rzeczywistej akcji)."
+
+  ###################################################
+  # 7. Develop action – tylko na gałęzi develop      #
+  ###################################################
+
+  develop_action:
+    name: Develop action
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    steps:
+      - name: Hello on develop
+        run: echo "Hello on develop"
