@@ -164,7 +164,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: coverage/unit/**/*.lcov
+          files: coverage/unit/**/*.info
           flags: unit-${{ matrix.node-version }}
 
   ###########################################################################
@@ -215,7 +215,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: coverage/unit/**/*.lcov
+          files: coverage/unit/**/*.info
           flags: container-unit
 
   ####################################################
@@ -280,7 +280,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: coverage/integration/**/*.lcov
+          files: coverage/integration/**/*.info
           flags: integration
 
   ###########################################
