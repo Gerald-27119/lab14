@@ -11,6 +11,7 @@ const redisPort = process.env.REDIS_PORT || 6379;
 // Zmienna sprawdzająca, czy jesteśmy w trybie testowym:
 const isTest = process.env.NODE_ENV === 'test';
 
+//test
 let redisClient;
 let Message;
 
