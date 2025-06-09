@@ -14,7 +14,7 @@ const isTest = process.env.NODE_ENV === 'test';
 //test
 let redisClient;
 let Message;
-
+//test
 // W trybie innym niż "test" – podłączamy się do Mongo i Redis:
 if (!isTest) {
   redisClient = new Redis({ host: redisHost, port: redisPort });

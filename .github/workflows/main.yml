@@ -1,4 +1,4 @@
-name: 'CI/CD Pipeline (Node.js + MongoDB + Redis)'
+name: 'Pipeline CI/CD'
 
 on:
   push:
