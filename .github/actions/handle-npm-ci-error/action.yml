@@ -1,7 +1,7 @@
-name: "Handle npm install failure"
-description: "Gathers npm logs when `npm ci` fails, useful for debugging CI issues."
+name: 'Handle npm install failure'
+description: 'Gathers npm logs when `npm ci` fails, useful for debugging CI issues.'
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - run: |
         echo "---- Lista plików w katalogu ~/.npm/_logs ----"
