@@ -126,22 +126,18 @@ jobs:
         run: npm ci
 
       # 2) Wypisanie i upload logów, jeśli instalacja się nie powiodła; potem od razu kończymy joba z błędem.
-      - name: Upload npm debug log (jeśli npm ci się nie powiódł)
+      - name: Print npm logs and save them
         if: steps.npm_install.outcome == 'failure'
-        run: |
-          echo "---- Lista plików w katalogu ~/.npm/_logs ----"
-          ls ~/.npm/_logs/ || true
-          echo "---- Zawartość wszystkich .log w ~/.npm/_logs ----"
-          cat ~/.npm/_logs/*.log || true
-
-      - name: Publish npm logs as artifact
+        uses: ./.github/actions/npm-error-handler
+      
+      - name: Upload logs as artifact
         if: steps.npm_install.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: npm-debug-logs-${{ matrix.node-version }}
-          path: ~/.npm/_logs/*.log
-
-      - name: Fail the job if npm ci failed
+          path: npm-logs/
+      
+      - name: Fail the job in a case of npm ci error
         if: steps.npm_install.outcome == 'failure'
         run: exit 1
 
