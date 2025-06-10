@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js 18
         uses: actions/setup-node@v3
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js 18
         uses: actions/setup-node@v3
@@ -73,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js 18
         uses: actions/setup-node@v3
@@ -100,7 +100,7 @@ jobs:
         node-version: [16, 18, 20]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -166,7 +166,7 @@ jobs:
       - format
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build Docker image for tests
         run: |
@@ -215,7 +215,7 @@ jobs:
       - format
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js 18
         uses: actions/setup-node@v3
@@ -278,13 +278,7 @@ jobs:
       - container_tests
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up QEMU (dla wieloarchitekturowego builda, opcjonalnie)
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx (opcjonalnie, do cross-build)
-        uses: docker/setup-buildx-action@v3
+        uses: actions/checkout@v4
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -324,7 +318,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Symulacja pobrania artefaktu obrazu
         run: echo ">>> [Symulacja deploy] Pobieram artefakt obrazu Docker (tylko echo)."
