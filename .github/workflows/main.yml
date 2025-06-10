@@ -312,7 +312,6 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          # Przykładowy tag: username/repo:commitSHA lub username/repo:latest
           push: true
           load: true
 
@@ -320,7 +319,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/lab14:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/lab14:latest
 
-      - name: Save Docker image to tar (opcjonalnie, jeśli chcesz artefakt)
+      - name: Save Docker image to tar (as artifact)
         run: docker save ${{ secrets.DOCKERHUB_USERNAME }}/lab14:${{ github.sha }} -o image.tar
 
       - name: Upload Docker image as artifact
