@@ -22,7 +22,6 @@ on:
           - production
 
 jobs:
-
   # 1. Faza wstępna (równoległe: lint, audit, format)
 
   lint:
@@ -86,7 +85,6 @@ jobs:
 
       - name: Check Prettier formatting
         run: npm run format
-
 
   # 2. Testy jednostkowe w matrixie (różne wersje Node.js)
 
@@ -157,7 +155,6 @@ jobs:
           files: coverage/unit/**/*.info
           flags: unit-${{ matrix.node-version }}
 
-
   # 3. Testy uruchamiane we własnym kontenerze Docker (tylko unit-testy)
 
   container_tests:
@@ -206,7 +203,6 @@ jobs:
         with:
           files: coverage/unit/**/*.info
           flags: container-unit
-
 
   # 4. Testy integracyjne z docker-compose
 
@@ -271,7 +267,6 @@ jobs:
           files: coverage/integration/**/*.info
           flags: integration
 
-
   # 5. Budowanie obrazu Docker
 
   build:
@@ -319,7 +314,6 @@ jobs:
           name: docker-image-${{ github.sha }}
           path: image.tar
 
-
   # 6. Deployment (symulowany)
 
   deploy:
@@ -354,7 +348,6 @@ jobs:
       - name: Notify on Deployment Failure (tylko symulacja komentarza)
         if: failure()
         run: echo ">>> [Symulacja deploy] Wystąpił błąd w symulowanym wdrożeniu – (tylko echo, brak rzeczywistej akcji)."
-
 
   # 7. Develop branch action
 
