@@ -1,0 +1,15 @@
+name: 'Handle npm install failure'
+description: 'Gathers npm logs when `npm ci` fails, useful for debugging CI issues.'
+runs:
+  using: 'composite'
+  steps:
+    - run: |
+        echo "---- Lista plików w katalogu ~/.npm/_logs ----"
+        ls ~/.npm/_logs/ || true
+
+        echo "---- Zawartość wszystkich .log w ~/.npm/_logs ----"
+        cat ~/.npm/_logs/*.log || true
+
+        mkdir -p npm-logs
+        cp ~/.npm/_logs/*.log npm-logs/ || true
+      shell: bash

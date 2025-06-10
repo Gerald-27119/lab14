@@ -1,4 +1,4 @@
-name: 'CI/CD Pipeline (Node.js + MongoDB + Redis)'
+name: 'Pipeline CI/CD'
 
 on:
   push:
@@ -22,9 +22,8 @@ on:
           - production
 
 jobs:
-  ################################################
+
   # 1. Faza wstępna (równoległe: lint, audit, format)
-  ################################################
 
   lint:
     name: Lint (ESLint)
@@ -88,9 +87,8 @@ jobs:
       - name: Check Prettier formatting
         run: npm run format
 
-  ################################################################
-  # 2. Testy jednostkowe w matrixie (różne wersje Node.js + cache)
-  ################################################################
+
+  # 2. Testy jednostkowe w matrixie (różne wersje Node.js)
 
   unit_tests:
     name: Unit Tests (Node.js matrix)
@@ -119,37 +117,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-${{ matrix.node-version }}-
 
-      # 1) Instalacja zależności; jeżeli się nie powiedzie, nie przerywamy od razu, ale zapisujemy status.
       - name: Install dependencies
         id: npm_install
         continue-on-error: true
         run: npm ci
 
-      # 2) Wypisanie i upload logów, jeśli instalacja się nie powiodła; potem od razu kończymy joba z błędem.
-      - name: Upload npm debug log (jeśli npm ci się nie powiódł)
+      - name: Print npm logs and save them
         if: steps.npm_install.outcome == 'failure'
-        run: |
-          echo "---- Lista plików w katalogu ~/.npm/_logs ----"
-          ls ~/.npm/_logs/ || true
-          echo "---- Zawartość wszystkich .log w ~/.npm/_logs ----"
-          cat ~/.npm/_logs/*.log || true
-        # Opcjonalnie: wrzucamy pliki do artefaktów, żeby można było je pobrać
-      - name: Publish npm logs as artifact
+        uses: ./.github/actions/npm-error-handler
+
+      - name: Upload logs as artifact
         if: steps.npm_install.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: npm-debug-logs-${{ matrix.node-version }}
-          path: ~/.npm/_logs/*.log
-      - name: Fail the job if npm ci failed
+          path: npm-logs/
+
+      - name: Fail the job in a case of npm ci error
         if: steps.npm_install.outcome == 'failure'
         run: exit 1
 
-      # 3) Jeżeli npm ci się powiódł, uruchamiamy testy. W przypadku błędu testów natychmiast job się przerwie.
       - name: Run Node.js Unit Tests
         if: steps.npm_install.outcome == 'success'
         run: npm run test:unit
 
-      # 4) Upload coverage tylko jeśli testy przeszły pomyślnie
       - name: Upload unit coverage report
         if: success()
         uses: actions/upload-artifact@v4
@@ -160,13 +151,14 @@ jobs:
       - name: Publish coverage to Codecov
         if: success()
         uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: coverage/unit/**/*.lcov
+          files: coverage/unit/**/*.info
           flags: unit-${{ matrix.node-version }}
 
-  ###########################################################################
+
   # 3. Testy uruchamiane we własnym kontenerze Docker (tylko unit-testy)
-  ###########################################################################
 
   container_tests:
     name: Tests in Docker Container (Unit only)
@@ -198,7 +190,6 @@ jobs:
             -w /usr/src/app \
             ci-cd-node-mongo-redis-ci:${{ github.sha }} \
             bash -c "npm ci && npm run test:unit"
-        # Jeżeli npm ci lub testy w kontenerze się nie powiedzą, job zakończy się od razu błędem.
 
       - name: Upload Docker-based unit coverage
         if: always()
@@ -207,25 +198,35 @@ jobs:
           name: container-unit-coverage
           path: coverage/unit
 
-  ####################################################
-  # 4. Testy integracyjne z docker-compose (Mongo+Redis)
-  ####################################################
+      - name: Publish container-based coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: coverage/unit/**/*.info
+          flags: container-unit
+
+
+  # 4. Testy integracyjne z docker-compose
 
   integration_tests:
     name: Integration Tests (docker-compose Mongo+Redis)
     runs-on: ubuntu-latest
     needs:
-      - unit_tests
+      - lint
+      - audit
+      - format
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Node.js 18 # <— Dodajemy Node.js
+      - name: Setup Node.js 18
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Cache npm # <— Caching npm
+      - name: Cache npm
         uses: actions/cache@v3
         with:
           path: ~/.npm
@@ -233,7 +234,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-18-
 
-      - name: Install dependencies # <— tu faktycznie instalujemy pakiety, w tym jest też "jest"
+      - name: Install dependencies
         run: npm ci
 
       - name: Setup Docker Compose
@@ -248,36 +249,69 @@ jobs:
       - name: Run Integration Tests
         run: npm run test:integration
 
+      - name: Check coverage directory
+        run: |
+          echo "### Zawartość folderu coverage/integration ###"
+          ls -R coverage/integration || echo "Brak katalogu coverage/integration"
+
       - name: Upload integration coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: integration-coverage
           path: coverage/integration
+          if-no-files-found: ignore
 
-  ###########################################
-  # 5. Budowanie obrazu produkcyjnego Docker #
-  ###########################################
+      - name: Publish integration coverage to Codecov
+        if: success()
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: coverage/integration/**/*.info
+          flags: integration
+
+
+  # 5. Budowanie obrazu Docker
 
   build:
-    name: Build Production Docker Image
+    name: Build & Publish Docker Image
     runs-on: ubuntu-latest
     needs:
       - integration_tests
+      - unit_tests
+      - container_tests
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Build Docker image
+      - name: Set up QEMU (dla wieloarchitekturowego builda, opcjonalnie)
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx (opcjonalnie, do cross-build)
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           context: .
           file: Dockerfile
-          push: false
-          tags: ci-cd-node-mongo-redis:${{ github.sha }}
+          push: true
+          load: true
 
-      - name: Save Docker image to tar
-        run: docker save ci-cd-node-mongo-redis:${{ github.sha }} -o image.tar
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/lab14:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/lab14:latest
+
+      - name: Save Docker image to tar (as artifact)
+        run: docker save ${{ secrets.DOCKERHUB_USERNAME }}/lab14:${{ github.sha }} -o image.tar
 
       - name: Upload Docker image as artifact
         uses: actions/upload-artifact@v4
@@ -285,16 +319,15 @@ jobs:
           name: docker-image-${{ github.sha }}
           path: image.tar
 
-  ##############################################
-  # 6. Deployment (symulowany) – tylko na master  #
-  ##############################################
+
+  # 6. Deployment (symulowany)
 
   deploy:
     name: Deploy (symulowany)
     runs-on: ubuntu-latest
     needs:
       - build
-    if: ${{ github.ref == 'refs/heads/master' && always() }}
+    if: ${{ github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -321,3 +354,14 @@ jobs:
       - name: Notify on Deployment Failure (tylko symulacja komentarza)
         if: failure()
         run: echo ">>> [Symulacja deploy] Wystąpił błąd w symulowanym wdrożeniu – (tylko echo, brak rzeczywistej akcji)."
+
+
+  # 7. Develop branch action
+
+  develop_action:
+    name: Develop action
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    steps:
+      - name: Hello on develop
+        run: echo "Hello on develop"
